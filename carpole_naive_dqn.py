@@ -56,11 +56,9 @@ class Agent():
     def learn(self, state, action, reward, state_):
         self.Q.optimizer.zero_grad()
         states = T.tensor(state, dtype=T.float).to(self.Q.device)
-        actions = T.tensor(action).to(self.Q.device)
-        rewards = T.tensor(reward).to(self.Q.device)
         states_ = T.tensor(state_, dtype=T.float).to(self.Q.device)
         # predicted Q-value for the actually taken action in current state basis current model
-        q_pred = self.Q.forward(states)[actions]
+        q_pred = self.Q.forward(states)[action]
         # the best Q-value among all possible actions from the next state basis current model
         q_next = self.Q.forward(states_).max()
         q_target = reward + self.gamma * q_next
@@ -77,8 +75,7 @@ if __name__ == '__main__':
     agent = Agent(
         input_dims = env.observation_space.shape,
         n_actions = env.action_space.n,
-        lr = 0.0001
-    )
+        lr = 0.0001)
     for i in range(n_games):
         score = 0
         done = False
