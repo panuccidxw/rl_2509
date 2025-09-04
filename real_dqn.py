@@ -22,7 +22,7 @@ import ale_py
 
 print(gym.__version__)
 # unlike "Breakout-v4" that randomly skips frame, "BreakoutNoFrameskip-v4" leaves you on how to handle frame skipping
-env = gym.make('BreakoutNoFrameskip-v4')
+env = gym.make('PongNoFrameskip-v4')
 print(type(env))
 env = AtariPreprocessing(
     env,

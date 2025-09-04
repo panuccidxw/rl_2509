@@ -30,8 +30,7 @@ if __name__ == '__main__':
     if load_checkpoint:
         agent.load_models()
 
-    fname = agent.algo + '_' + agent.env_name + '_lr' + str(agent.lr) +'_' \
-            + str(n_games) + 'games'
+    fname = agent.algo + '_' + agent.env_name + '_lr' + str(agent.lr) +'_' + str(n_games) + 'games'
     figure_file = 'plots/' + fname + '.png'
     # if you want to record video of your agent playing, do a mkdir tmp && mkdir tmp/dqn-video
     # and uncomment the following 2 lines.
@@ -42,17 +41,16 @@ if __name__ == '__main__':
 
     for i in range(n_games):
         done = False
-        observation = env.reset()
+        observation, _ = env.reset()
 
         score = 0
         while not done:
             action = agent.choose_action(observation)
-            observation_, reward, done, info = env.step(action)
+            observation_, reward, terminated, truncated, info = env.step(action)
             score += reward
 
             if not load_checkpoint:
-                agent.store_transition(observation, action,
-                                     reward, observation_, done)
+                agent.store_transition(observation, action, reward, observation_, done)
                 agent.learn()
             observation = observation_
             n_steps += 1
