@@ -21,7 +21,7 @@ def plot_learning_curve(x, scores, epsilons, filename, lines=None):
     N = len(scores)
     running_avg = np.empty(N)
     for t in range(N):
-	    running_avg[t] = np.mean(scores[max(0, t-20):(t+1)])
+        running_avg[t] = np.mean(scores[max(0, t-20):(t+1)])
 
     ax2.scatter(x, running_avg, color="C1")
     ax2.axes.get_xaxis().set_visible(False)
@@ -84,8 +84,7 @@ class PreprocessFrame(gym.ObservationWrapper):
     def __init__(self, shape, env=None):
         super(PreprocessFrame, self).__init__(env)
         self.shape = (shape[2], shape[0], shape[1])
-        self.observation_space = gym.spaces.Box(low=0.0, high=1.0,
-                                    shape=self.shape, dtype=np.float32)
+        self.observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=self.shape, dtype=np.float32)
 
     def observation(self, obs):
         new_frame = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
@@ -120,7 +119,10 @@ class StackFrames(gym.ObservationWrapper):
 
 def make_env(env_name, shape=(84,84,1), repeat=4, clip_rewards=False,
              no_ops=0, fire_first=False):
-    env = gym.make(env_name)
+    # render_mode = None by default, for fast training
+    # render_mode = "human", for screen display
+    # render_mode = "rgb_array", returns numpy arrays, which can be processed for video recording
+    env = gym.make(env_name, render_mode = "rgb_array")
     env = RepeatActionAndMaxFrame(env, repeat, clip_rewards, no_ops, fire_first)
     env = PreprocessFrame(shape, env)
     env = StackFrames(env, repeat)

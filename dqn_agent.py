@@ -36,7 +36,7 @@ class DQNAgent(object):
 
     def choose_action(self, observation):
         if np.random.random() > self.epsilon:
-            state = T.tensor([observation],dtype=T.float).to(self.q_eval.device)
+            state = T.tensor(observation,dtype=T.float).unsqueeze(0).to(self.q_eval.device)
             actions = self.q_eval.forward(state)
             action = T.argmax(actions).item()
         else:
@@ -48,8 +48,7 @@ class DQNAgent(object):
         self.memory.store_transition(state, action, reward, state_, done)
 
     def sample_memory(self):
-        state, action, reward, new_state, done = \
-                                self.memory.sample_buffer(self.batch_size)
+        state, action, reward, new_state, done = self.memory.sample_buffer(self.batch_size)
 
         states = T.tensor(state).to(self.q_eval.device)
         rewards = T.tensor(reward).to(self.q_eval.device)
@@ -64,8 +63,7 @@ class DQNAgent(object):
             self.q_next.load_state_dict(self.q_eval.state_dict())
 
     def decrement_epsilon(self):
-        self.epsilon = self.epsilon - self.eps_dec \
-                           if self.epsilon > self.eps_min else self.eps_min
+        self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
 
     def save_models(self):
         self.q_eval.save_checkpoint()
