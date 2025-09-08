@@ -1,3 +1,11 @@
+'''
+We know Q-learning is subject to upward bias problem in its max() operator.
+DQN, as son of Q-learning and network, especially for target network q_next, inherit the same problem.
+Our solution: to break feedback loop that may self-reinforce the upward bias, we manage the action selection step by
+ourselves instead of letting the target network to self-pilot. It is like sending a director to your invested company
+to ensure control.
+'''
+
 
 import numpy as np
 import time
@@ -6,10 +14,11 @@ from ddqn_agent import DDQNAgent
 from utils import plot_learning_curve, make_env
 from gymnasium.wrappers import RecordVideo
 
+
 if __name__ == '__main__':
     # unlike "Breakout-v4" that skips random number of frames, "BreakoutNoFrameskip-v4" leaves you on how to handle frame skipping
     # other available games: 'PongNoFrameskip-v4', 'CartPole-v1', 'SpaceInvadersNoFrameskip-v4'
-    game_name = "SpaceInvadersNoFrameskip-v4"
+    game_name = "PongNoFrameskip-v4"
     game_start_time = time.time()
     env = make_env(game_name)
     best_score = -np.inf
@@ -93,7 +102,6 @@ if __name__ == '__main__':
 
     x = [i + 1 for i in range(len(scores))]
     plot_learning_curve(steps_array, scores, eps_history, figure_file)
-
     game_end_time = time.time()
     total_seconds = int(game_end_time - game_start_time)
     days = total_seconds // 86400

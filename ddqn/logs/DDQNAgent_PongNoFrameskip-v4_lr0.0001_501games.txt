@@ -1,0 +1,13 @@
+episode: 0, score: -21.0, moving average: -21.0, best: -inf, duration: 17.1
+episode: 0, score: -21.0, moving average: -21.0, best: -inf, duration: 18.5
+episode: 1, score: -20.0, moving average: -20.5, best: -21.0, duration: 22.2
+episode: 2, score: -21.0, moving average: -20.7, best: -20.5, duration: 22.3
+episode: 3, score: -18.0, moving average: -20.0, best: -20.5, duration: 27.8
+episode: 4, score: -21.0, moving average: -20.2, best: -20.0, duration: 22.2
+episode: 5, score: -19.0, moving average: -20.0, best: -20.0, duration: 23.5
+episode: 0, score: -21.0, moving average: -21.0, best: -inf, duration: 19.6
+episode: 1, score: -21.0, moving average: -21.0, best: -21.0, duration: 23.4
+episode: 2, score: -20.0, moving average: -20.7, best: -21.0, duration: 30.0
+episode: 3, score: -21.0, moving average: -20.8, best: -20.7, duration: 27.0
+episode: 0, score: -21.0, moving average: -21.0, best: -inf, duration: 19.4
+episode: 1, score: -20.0, moving average: -20.5, best: -21.0, duration: 24.0
