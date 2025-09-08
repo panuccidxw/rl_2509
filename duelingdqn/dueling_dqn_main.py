@@ -1,3 +1,9 @@
+'''
+One of the key advantage of dueling is that it provides state value as side-product of training.
+State value allows us to identify states that are not important for control (All advantage values are close to zero)
+For example, in Pong, when the ball just bounce off, the action of paddle doesn't make difference.
+'''
+
 import gymnasium as gym
 import numpy as np
 from dueling_dqn_agent import DuelingDQNAgent
