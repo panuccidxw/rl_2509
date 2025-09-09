@@ -24,34 +24,33 @@ class DuelingDQNAgent(object):
 
         self.memory = ReplayBuffer(mem_size, input_dims, n_actions)
 
-        self.q_eval = DuelingDeepQNetwork(self.lr, self.n_actions,
-                        input_dims=self.input_dims,
-                        name=self.env_name+'_'+self.algo+'_q_eval',
-                        chkpt_dir=self.chkpt_dir)
-        self.q_next = DuelingDeepQNetwork(self.lr, self.n_actions,
-                        input_dims=self.input_dims,
-                        name=self.env_name+'_'+self.algo+'_q_next',
-                        chkpt_dir=self.chkpt_dir)
+        self.online_net = DuelingDeepQNetwork(self.lr, self.n_actions,
+                                              input_dims=self.input_dims,
+                                              name=self.env_name+'_'+self.algo+'_q_eval',
+                                              chkpt_dir=self.chkpt_dir)
+        self.target_net = DuelingDeepQNetwork(self.lr, self.n_actions,
+                                              input_dims=self.input_dims,
+                                              name=self.env_name+'_'+self.algo+'_q_next',
+                                              chkpt_dir=self.chkpt_dir)
 
     def store_transition(self, state, action, reward, state_, done):
         self.memory.store_transition(state, action, reward, state_, done)
 
     def sample_memory(self):
-        state, action, reward, new_state, done = \
-                                self.memory.sample_buffer(self.batch_size)
+        state, action, reward, new_state, done = self.memory.sample_buffer(self.batch_size)
 
-        states = T.tensor(state).to(self.q_eval.device)
-        rewards = T.tensor(reward).to(self.q_eval.device)
-        dones = T.tensor(done).to(self.q_eval.device)
-        actions = T.tensor(action).to(self.q_eval.device)
-        states_ = T.tensor(new_state).to(self.q_eval.device)
+        states = T.tensor(state).to(self.online_net.device)
+        rewards = T.tensor(reward).to(self.online_net.device)
+        dones = T.tensor(done).to(self.online_net.device)
+        actions = T.tensor(action).to(self.online_net.device)
+        states_ = T.tensor(new_state).to(self.online_net.device)
 
         return states, actions, rewards, states_, dones
 
     def choose_action(self, observation):
         if np.random.random() > self.epsilon:
-            state = T.tensor([observation],dtype=T.float).to(self.q_eval.device)
-            _, advantage = self.q_eval.forward(state)
+            state = T.tensor(np.array([observation]), dtype=T.float).to(self.online_net.device)
+            _, advantage = self.online_net.forward(state)
             action = T.argmax(advantage).item()
         else:
             action = np.random.choice(self.action_space)
@@ -61,7 +60,7 @@ class DuelingDQNAgent(object):
     def replace_target_network(self):
         if self.replace_target_cnt is not None and \
            self.learn_step_counter % self.replace_target_cnt == 0:
-            self.q_next.load_state_dict(self.q_eval.state_dict())
+            self.target_net.load_state_dict(self.online_net.state_dict())
 
     def decrement_epsilon(self):
         self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
@@ -70,14 +69,14 @@ class DuelingDQNAgent(object):
         if self.memory.mem_cntr < self.batch_size:
             return
 
-        self.q_eval.optimizer.zero_grad()
+        self.online_net.optimizer.zero_grad()
 
         self.replace_target_network()
 
         states, actions, rewards, states_, dones = self.sample_memory()
 
-        V_s, A_s = self.q_eval.forward(states)
-        V_s_, A_s_ = self.q_next.forward(states_)
+        V_s, A_s = self.online_net.forward(states)
+        V_s_, A_s_ = self.target_net.forward(states_)
 
         indices = np.arange(self.batch_size)
 
@@ -88,17 +87,17 @@ class DuelingDQNAgent(object):
         q_target = rewards + self.gamma*q_next
 
 
-        loss = self.q_eval.loss(q_target, q_pred).to(self.q_eval.device)
+        loss = self.online_net.loss(q_target, q_pred).to(self.online_net.device)
         loss.backward()
-        self.q_eval.optimizer.step()
+        self.online_net.optimizer.step()
         self.learn_step_counter += 1
 
         self.decrement_epsilon()
 
     def save_models(self):
-        self.q_eval.save_checkpoint()
-        self.q_next.save_checkpoint()
+        self.online_net.save_checkpoint()
+        self.target_net.save_checkpoint()
 
     def load_models(self):
-        self.q_eval.load_checkpoint()
-        self.q_next.load_checkpoint()
+        self.online_net.load_checkpoint()
+        self.target_net.load_checkpoint()

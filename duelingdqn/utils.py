@@ -3,6 +3,9 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import gymnasium as gym
+import ale_py
+
+ale_py.register_v5_envs()
 
 def plot_learning_curve(x, scores, epsilons, filename, lines=None):
     fig=plt.figure()
@@ -41,13 +44,14 @@ class RepeatActionAndMaxFrame(gym.Wrapper):
         super(RepeatActionAndMaxFrame, self).__init__(env)
         self.repeat = repeat
         self.shape = env.observation_space.low.shape
-        self.frame_buffer = np.zeros_like((2,self.shape))
+        self.frame_buffer = np.zeros((2,) + self.shape, dtype=env.observation_space.dtype)
 
     def step(self, action):
         t_reward = 0.0
         done = False
         for i in range(self.repeat):
-            obs, reward, done, info = self.env.step(action)
+            obs, reward, terminated, truncated, info = self.env.step(action)
+            done = terminated or truncated
             t_reward += reward
             idx = i % 2
             self.frame_buffer[idx] = obs
@@ -55,13 +59,13 @@ class RepeatActionAndMaxFrame(gym.Wrapper):
                 break
 
         max_frame = np.maximum(self.frame_buffer[0], self.frame_buffer[1])
-        return max_frame, t_reward, done, info
+        return max_frame, t_reward, terminated, truncated, info
 
-    def reset(self):
-        obs = self.env.reset()
-        self.frame_buffer = np.zeros_like((2,self.shape))
+    def reset(self, **kwargs):
+        obs, info = self.env.reset(**kwargs)
+        self.frame_buffer = np.zeros((2,) + self.shape, dtype=self.env.observation_space.dtype)
         self.frame_buffer[0] = obs
-        return obs
+        return obs, info
 
 class PreprocessFrame(gym.ObservationWrapper):
     def __init__(self, shape, env=None):
@@ -88,13 +92,13 @@ class StackFrames(gym.ObservationWrapper):
                              dtype=np.float32)
         self.stack = collections.deque(maxlen=n_steps)
 
-    def reset(self):
+    def reset(self, **kwargs):
         self.stack.clear()
-        observation = self.env.reset()
+        observation, info = self.env.reset(**kwargs)
         for _ in range(self.stack.maxlen):
             self.stack.append(observation)
 
-        return np.array(self.stack).reshape(self.observation_space.low.shape)
+        return np.array(self.stack).reshape(self.observation_space.low.shape), info
 
     def observation(self, observation):
         self.stack.append(observation)
@@ -103,7 +107,7 @@ class StackFrames(gym.ObservationWrapper):
         return obs
 
 def make_env(env_name, shape=(84,84,1), skip=4):
-    env = gym.make(env_name)
+    env = gym.make(env_name, render_mode="rgb_array")
     env = RepeatActionAndMaxFrame(env, skip)
     env = PreprocessFrame(shape, env)
     env = StackFrames(env, skip)

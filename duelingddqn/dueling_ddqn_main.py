@@ -1,5 +1,5 @@
-import gym
-from gym import wrappers
+import gymnasium
+from gymnasium import wrappers
 import numpy as np
 from dueling_ddqn_agent import DuelingDDQNAgent
 from utils import plot_learning_curve, make_env
@@ -28,17 +28,18 @@ if __name__ == '__main__':
 
     for i in range(n_games):
         done = False
-        observation = env.reset()
+        observation, _ = env.reset()
 
         score = 0
         while not done:
             action = agent.choose_action(observation)
-            observation_, reward, done, info = env.step(action)
+            observation_, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
             score += reward
 
             if not load_checkpoint:
                 agent.store_transition(observation, action,
-                                     reward, observation_, int(done))
+                                     reward, observation_, done)
                 agent.learn()
             observation = observation_
             n_steps += 1

@@ -11,3 +11,5 @@ episode: 2, score: -20.0, moving average: -20.7, best: -21.0, duration: 30.0
 episode: 3, score: -21.0, moving average: -20.8, best: -20.7, duration: 27.0
 episode: 0, score: -21.0, moving average: -21.0, best: -inf, duration: 19.4
 episode: 1, score: -20.0, moving average: -20.5, best: -21.0, duration: 24.0
+episode: 0, score: -20.0, moving average: -20.0, best: -inf, duration: 26.4
+episode: 0, score: -21.0, moving average: -21.0, best: -inf, duration: 19.3
